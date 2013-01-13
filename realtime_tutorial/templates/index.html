@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Realtime Django</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript"></script>
+  <script src="http://localhost:4000/socket.io/socket.io.js"></script>
+  <script>
+    $(document).ready(function(){
+      var socket = io.connect('localhost', {port: 4000});
+      
+      socket.on('connect', function(){
+        console.log("connect");
+      });
+      
+      var entry_el = $('#comment');
+               
+      socket.on('message', function(message) {
+        //Escape HTML characters
+        var data = message.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        
+        //Append message to the bottom of the list
+        $('#comments').append('<li>' + data + '</li>');
+        window.scrollBy(0, 10000000000);
+        entry_el.focus();
+      });
+                     
+      entry_el.keypress(function(event){
+        //When enter is pressed send input value to node server
+        if(event.keyCode != 13) return;
+        var msg = entry_el.attr('value');
+        if(msg){
+           socket.emit('send_message', msg, function(data){
+                console.log(data);
+           });
+        
+        //Clear input value   
+        entry_el.attr('value', '');
+       }
+      });
+    });
+  </script>
+</head>
+<body>
+    <ul id="comments">
+        {% for comment in comments %}
+            <li>{{comment.user}}: {{comment.text}}</li>
+        {% endfor %}
+    </ul>
+    <input type="text" id="comment" name="comment" />
+</body>
+</html>
