@@ -48,7 +48,7 @@ io.sockets.on('connection', function (socket) {
         };
         
         //Send message to Django server
-        var req = http.get(options, function(res){
+        var req = http.request(options, function(res){
             res.setEncoding('utf8');
             
             //Print out error message
